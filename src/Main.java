@@ -16,17 +16,19 @@ public class Main {
             // Programa de ejemplo del enunciado:
             source = """
             /* Programa de ejemplo */
-                    long x;
-                    double y;
-                    x = 3;
-                    y = 2.5;
-                    if (x + y > 0) then {
-                        long z;
-                        z = x + y;  // Error: double → long
-                        write(z);
-                    }
-                    write(x + 3.5); // Correcto: convierte a double
-                    write(z);       // Error: z no visible fuera del bloque
+                    long _x;
+                                            long _y;
+                                            double _prom;
+                    
+                                            read(_x);
+                                            read(_y);
+                                            
+                                            if (_x > _y) then
+                                                _prom = (_x + _y) / 2;
+                                            else
+                                                _prom = (_y - _x) / 2;
+                    
+                                            write(_prom);
                     
 
             // Fin del programa

@@ -13,7 +13,7 @@ public class LexError {
 
     @Override
     public String toString() {
-        return "Error léxico [línea " + line + ", columna " + column + "]: " + message;
+        return "Error [línea " + line + ", columna " + column + "]: " + message;
     }
 }
 
