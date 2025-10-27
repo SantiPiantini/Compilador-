@@ -3,15 +3,12 @@ package symboltable;
 import java.util.*;
 
 public class SymbolTable {
-    // Mantenemos una pila de mapas (uno por ámbito)
     private final Deque<Map<String, SymbolInfo>> scopes = new ArrayDeque<>();
 
     public SymbolTable() {
-        // Creamos el ámbito global al inicio
         beginScope();
     }
 
-    // === Manejo de Ámbitos ===
     public void beginScope() {
         scopes.push(new HashMap<>());
     }
@@ -20,7 +17,6 @@ public class SymbolTable {
         scopes.pop();
     }
 
-    // === Manejo de Símbolos ===
     public boolean existsInCurrentScope(String name) {
         return scopes.peek().containsKey(name);
     }
@@ -46,7 +42,6 @@ public class SymbolTable {
         return null;
     }
 
-    // === Mostrar toda la tabla ===
     public void print() {
         System.out.println("\n=== TABLA DE SÍMBOLOS ===");
         System.out.printf("%-10s %-10s %-10s %-10s %-10s%n", "Nombre", "Tipo", "Valor", "Ámbito", "Línea");
@@ -61,7 +56,6 @@ public class SymbolTable {
         }
     }
 
-    // === Estructura del símbolo ===
     public static class SymbolInfo {
         public final String name;
         public final String type;

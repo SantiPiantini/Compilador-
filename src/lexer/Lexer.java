@@ -11,8 +11,8 @@ public class Lexer {
 
     private final List<Token> tokens = new ArrayList<>();
 
-    private int start = 0;    // índice del comienzo del lexema actual
-    private int current = 0;  // índice del cursor
+    private int start = 0;
+    private int current = 0;
     private int line = 1;
     private int column = 1;
     private int startColumn = 1;
@@ -28,7 +28,6 @@ public class Lexer {
         keywords.put("break", TokenType.BREAK);
         keywords.put("read", TokenType.READ);
         keywords.put("write", TokenType.WRITE);
-        // opcionales booleanos
         keywords.put("true", TokenType.TRUE);
         keywords.put("false", TokenType.FALSE);
     }
@@ -93,22 +92,17 @@ public class Lexer {
     private void scanToken() {
         char c = advance();
         switch (c) {
-            // espacios
             case ' ': case '\r': case '\t':
-                // ignorar (la columna ya se movió en advance)
                 break;
             case '\n':
-                // ya lo manejamos en advance
                 break;
 
-            // agrupación y separadores
             case '(' : addToken(TokenType.LPAREN); break;
             case ')' : addToken(TokenType.RPAREN); break;
             case '{' : addToken(TokenType.LBRACE); break;
             case '}' : addToken(TokenType.RBRACE); break;
             case ';' : addToken(TokenType.SEMICOLON); break;
 
-            // operadores simples/compuestos
             case '!':
                 if (match('=')) addToken(TokenType.EQEQ, "!="); // lo normal sería NEQ, pero mantenemos coherencia
                 else addToken(TokenType.BANG);
@@ -185,18 +179,16 @@ public class Lexer {
     }
 
     private void blockComment() {
-        // comentario /* ... */
         int openLine = line;
-        int openCol = column - 2; // aprox al inicio de "/*"
+        int openCol = column - 2;
         while (!isAtEnd()) {
             if (peek() == '*' && peekNext() == '/') {
-                advance(); // *
-                advance(); // /
+                advance();
+                advance();
                 return;
             }
             advance();
         }
-        // si terminó el archivo y no cerró:
         errors.addLexError(openLine, openCol, "comentario multilínea sin cierre.");
     }
 
@@ -208,7 +200,6 @@ public class Lexer {
         while (!isAtEnd() && peek() != '"') {
             char c = advance();
             if (c == '\n') {
-                // Permitimos salto de línea? En general NO. Marcamos error y salimos.
                 errors.addLexError(strLine, strCol, "cadena sin cierre en la misma línea.");
                 return;
             }
@@ -220,18 +211,17 @@ public class Lexer {
             return;
         }
 
-        advance(); // consumir la comilla de cierre
+        advance();
         addToken(TokenType.STRING_LITERAL, sb.toString());
     }
 
     private void number(char first) {
-        // enteros y reales: parte entera [ . parte decimal ]
         while (isDigit(peek())) advance();
 
         boolean isDouble = false;
         if (peek() == '.' && isDigit(peekNext())) {
             isDouble = true;
-            advance(); // consume '.'
+            advance();
             while (isDigit(peek())) advance();
         }
 
@@ -260,7 +250,6 @@ public class Lexer {
         if (type == null) {
             addToken(TokenType.IDENTIFIER, text);
         } else {
-            // true/false como literales booleanos si querés
             if (type == TokenType.TRUE) addToken(TokenType.TRUE, true);
             else if (type == TokenType.FALSE) addToken(TokenType.FALSE, false);
             else addToken(type);

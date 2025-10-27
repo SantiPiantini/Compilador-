@@ -1,3 +1,9 @@
+/* Lee el codigo fuente
+* Crea un lexer para generar tokens
+* Pasa esos tokens al parser
+* Si hay errores usa el ErrorHandler
+* Imprime la tabla de simpobolos o el resultado final del analisis
+*/
 import lexer.*;
 import error.*;
 import parser.*;
@@ -16,24 +22,25 @@ public class Main {
             // Programa de ejemplo del enunciado:
             source = """
             /* Programa de ejemplo */
-                    long x;
-                    double y;
-                    x = 3;
-                    y = 2.5;
-                    if (x + y > 0) then {
-                        long z;
-                        z = x + y;  // Error: double → long
-                        write(z);
-                    }
-                    write(x + 3.5); // Correcto: convierte a double
-                    write(z);       // Error: z no visible fuera del bloque
-                    
+                long _x;
+                long _y;
+                double _prom;
+         
+                read(_x);
+                read(_y);
+            
+                if (_x > _y) then
+                    _prom = (_x + _y) / 2;
+                else
+                    _prom = (_y - _x) / 2;
+           
+                write(_prom);
 
             // Fin del programa
             """;
         }
 
-        // === 1. ANALIZADOR LÉXICO ===
+        // ANALIZADOR LÉXICO
         ErrorHandler err = new ErrorHandler();
         Lexer lexer = new Lexer(source, err);
         List<Token> tokens = lexer.scanTokens();
@@ -49,7 +56,7 @@ public class Main {
             return;
         }
 
-        // === 2. ANALIZADOR SINTÁCTICO ===
+        //ANALIZADOR SINTÁCTICO
         Parser parser = new Parser(tokens, err);
         List<Statement> statements = parser.parse();
 
@@ -59,7 +66,7 @@ public class Main {
             return;
         }
 
-        // === 3. RESULTADO DEL PARSER ===
+        //RESULTADO DEL PARSER
         System.out.println("\n✅ Análisis sintáctico exitoso.\n");
         System.out.println("=== ESTRUCTURA DEL PROGRAMA ===");
         for (Statement s : statements) {

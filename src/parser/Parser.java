@@ -20,12 +20,10 @@ public class Parser {
         this.errors = errors;
     }
 
-    // === Getter para usar la tabla desde Main ===
     public SymbolTable getSymbolTable() {
         return symbolTable;
     }
 
-    // === Método principal ===
     public List<Statement> parse() {
         while (!isAtEnd()) {
             Statement stmt = declaration();
@@ -34,10 +32,7 @@ public class Parser {
         return statements;
     }
 
-    // ====================================================
-    // =============== REGLAS PRINCIPALES =================
-    // ====================================================
-
+    //REGLAS PRINCIPALES
     private Statement declaration() {
         if (match(TokenType.LONG, TokenType.DOUBLE)) {
             return varDeclaration(); // ✅ llamadas a declaraciones de variables
@@ -45,11 +40,10 @@ public class Parser {
         return statement();
     }
 
-    // --- Declaraciones de variables ---
+    // Declaraciones de variables
     private Statement varDeclaration() {
         Token typeToken = previous();
 
-        // Esperamos un identificador después del tipo
         if (!check(TokenType.IDENTIFIER)) {
             error(peek(), "Se esperaba un identificador después del tipo.");
             synchronize();
@@ -60,10 +54,8 @@ public class Parser {
         StringBuilder content = new StringBuilder();
         content.append(typeToken.lexeme).append(" ").append(name.lexeme);
 
-        // Guardar variable en la tabla de símbolos
         symbolTable.addSymbol(name.lexeme, typeToken.lexeme, null, "global", typeToken.line);
 
-        // Si hay asignación
         if (match(TokenType.ASSIGN)) {
             String valueExpr = expressionToString();
             content.append(" = ").append(valueExpr);
@@ -74,7 +66,6 @@ public class Parser {
         return new Statement("varDecl", content.toString(), typeToken.line, typeToken.column);
     }
 
-    // --- Sentencias generales ---
     private Statement statement() {
         if (match(TokenType.READ)) return readStatement();
         if (match(TokenType.WRITE)) return writeStatement();
@@ -85,12 +76,10 @@ public class Parser {
         return exprStatement();
     }
 
-    // --- Sentencias específicas ---
     private Statement readStatement() {
         consume(TokenType.LPAREN, "Se esperaba '(' después de 'read'.");
         Token id = consume(TokenType.IDENTIFIER, "Se esperaba un identificador dentro de read().");
 
-        // Validar si la variable fue declarada
         if (symbolTable.getSymbol(id.lexeme) == null) {
             errors.addLexError(id.line, id.column, "Variable '" + id.lexeme + "' usada sin declarar.");
         }
@@ -103,10 +92,8 @@ public class Parser {
     private Statement writeStatement() {
         consume(TokenType.LPAREN, "Se esperaba '(' después de 'write'.");
 
-        // Leer toda la expresión dentro del paréntesis
         String expr = expressionToString();
 
-        // Chequear si el primer token de la expresión es un identificador no declarado
         String firstWord = expr.split(" ")[0];
         if (Character.isLetter(firstWord.charAt(0)) || firstWord.startsWith("_")) {
             if (!symbolTable.exists(firstWord) && !firstWord.matches("\\d+(\\.\\d+)?")) {
@@ -125,7 +112,6 @@ public class Parser {
         consume(TokenType.LPAREN, "Se esperaba '(' después de 'if'.");
         String condition = expressionToString();
 
-        // Verificamos que los operandos sean numéricos o booleanos válidos
         String condType = inferExpressionType(condition);
         if (!condType.equals("long") && !condType.equals("double")) {
             errors.addLexError(peek().line, peek().column,
@@ -157,7 +143,7 @@ public class Parser {
     }
 
     private Statement blockStatement() {
-        symbolTable.beginScope(); // ✅ Nuevo ámbito local
+        symbolTable.beginScope();
 
         StringBuilder body = new StringBuilder();
         while (!check(TokenType.RBRACE) && !isAtEnd()) {
@@ -166,7 +152,7 @@ public class Parser {
         }
 
         consume(TokenType.RBRACE, "Falta '}' para cerrar el bloque.");
-        symbolTable.endScope(); // ✅ Cerramos ámbito
+        symbolTable.endScope();
 
         return new Statement("block", body.toString(), previous().line, previous().column);
     }
@@ -176,13 +162,11 @@ public class Parser {
         String expr = expressionToString();
         consume(TokenType.SEMICOLON, "Falta ';' después de la expresión.");
 
-        // Verificamos si es una asignación (a = b + 3.5)
         String[] parts = expr.split("=");
         if (parts.length == 2) {
             String left = parts[0].trim();
             String right = parts[1].trim();
 
-            // Validar que la variable exista
             if (!symbolTable.exists(left)) {
                 errors.addLexError(peek().line, peek().column,
                         "Error semántico: variable '" + left + "' usada sin declarar.");
@@ -190,7 +174,6 @@ public class Parser {
                 String leftType = symbolTable.getSymbol(left).type;
                 String rightType = inferExpressionType(right);
 
-                // Si el tipo derecho es double pero el izquierdo es long
                 if (leftType.equals("long") && rightType.equals("double")) {
                     errors.addLexError(peek().line, peek().column,
                             "Error semántico: no se puede asignar un double a un long (" + left + ").");
@@ -203,9 +186,7 @@ public class Parser {
 
 
 
-    // ====================================================
-    // =============== EXPRESIONES SIMPLES ================
-    // ====================================================
+    // EXPRESIONES SIMPLES
 
     private String expressionToString() {
         StringBuilder expr = new StringBuilder();
@@ -227,9 +208,7 @@ public class Parser {
         return expr.toString().trim();
     }
 
-    // ====================================================
-    // =================== UTILIDADES =====================
-    // ====================================================
+    // UTILIDADES
 
     private boolean match(TokenType... types) {
         for (TokenType type : types) {
@@ -280,10 +259,9 @@ public class Parser {
         }
     }
     private String inferExpressionType(String expr) {
-        // Si hay un punto decimal, asumimos double
+
         if (expr.matches(".*\\d+\\.\\d+.*")) return "double";
 
-        // Si hay operadores aritméticos, miramos las variables
         String[] tokens = expr.split("[\\s\\+\\-\\*/]+");
         boolean hasDouble = false;
         for (String t : tokens) {

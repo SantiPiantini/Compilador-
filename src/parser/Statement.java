@@ -1,7 +1,7 @@
 package parser;
 
 public class Statement extends ASTNode {
-    public String kind; // tipo: varDecl, if, while, expr, read, write, block
+    public String kind;
     public String content;
 
     public Statement(String kind, String content, int line, int column) {
